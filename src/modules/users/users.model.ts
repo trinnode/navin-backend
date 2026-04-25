@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema(
     role: { type: String, enum: Object.values(UserRole), required: true },
     organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
     walletAddress: { type: String, required: false },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -49,6 +50,15 @@ UserSchema.methods.toJSON = function () {
   delete obj.passwordHash;
   return obj;
 };
+
+// Soft delete middleware
+UserSchema.pre(['find', 'findOne', 'findOneAndUpdate', 'countDocuments'], function () {
+  this.where({ deletedAt: null });
+});
+
+UserSchema.pre('aggregate', function () {
+  this.pipeline().unshift({ $match: { deletedAt: null } });
+});
 
 export type Organization = InferSchemaType<typeof OrganizationSchema> & {
   _id: mongoose.Types.ObjectId;
