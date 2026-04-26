@@ -153,3 +153,9 @@ export const uploadShipmentProofService = async (
   );
   return shipment;
 };
+
+export const deleteShipmentService = async (id: string) => {
+  const shipment = await Shipment.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+  if (!shipment) return null;
+  return shipment;
+};

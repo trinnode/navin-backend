@@ -6,6 +6,7 @@ import {
   patchShipmentService,
   updateShipmentStatusService,
   uploadShipmentProofService,
+  deleteShipmentService,
 } from './shipments.service.js';
 
 export const getShipments = async (req: Request, res: Response) => {
@@ -78,4 +79,11 @@ export const uploadShipmentProof = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(500).json({ message: 'Server error', error });
   }
+};
+
+export const deleteShipment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const shipment = await deleteShipmentService(id);
+  if (!shipment) return res.status(404).json({ message: 'Shipment not found' });
+  res.json({ success: true, message: 'Shipment deleted successfully' });
 };
