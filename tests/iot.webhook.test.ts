@@ -5,6 +5,8 @@ import type { Application } from 'express';
 
 type TelemetryCreateResult = {
   _id: string;
+  sensorId?: string;
+  sensorId: string;
   shipmentId: string;
   temperature: number;
   humidity: number;
@@ -14,15 +16,7 @@ type TelemetryCreateResult = {
   timestamp: Date;
   dataHash: string;
   anchorStatus: string;
-  rawPayload: {
-    shipmentId: string;
-    temperature: number;
-    humidity: number;
-    latitude: number;
-    longitude: number;
-    batteryLevel: number;
-    timestamp: Date;
-  };
+  rawPayload: unknown;
 };
 
 type ValidateApiKeyResult = {
@@ -30,17 +24,19 @@ type ValidateApiKeyResult = {
   apiKeyDoc?: {
     _id: string;
     organizationId: string;
-    shipmentId: string;
+    shipmentId?: string;
   };
 };
 
 describe('POST /api/webhooks/iot', () => {
   const body = {
-    sensorId: 'sensor-abc-001',
+    shipmentId: '507f1f77bcf86cd799439011',
     timestamp: '2026-01-15T12:30:00.000Z',
-    temp: 22.5,
+    temperature: 22.5,
     humidity: 55,
-    location: { lat: 12.34, lng: 56.78 },
+    latitude: 12.34,
+    longitude: 56.78,
+    batteryLevel: 88,
   };
 
   const parsedBodyForHash = {
@@ -49,25 +45,32 @@ describe('POST /api/webhooks/iot', () => {
   };
 
   const dataHash = generateDataHash(parsedBodyForHash);
+  const resolvedShipmentId = '507f1f77bcf86cd799439011';
 
   let app: Application;
   const mockTelemetryCreate = jest.fn<(payload: unknown) => Promise<TelemetryCreateResult>>();
   const mockValidateApiKey = jest.fn<(rawApiKey: string) => Promise<ValidateApiKeyResult>>();
+  const mockFindActiveShipmentBySensorId = jest.fn<(sensorId: string) => Promise<{ _id: string; status: string } | null>>();
   const mockPushStellarAnchorJob = jest.fn<
     (payload: { telemetryId: string; shipmentId: string; dataHash: string }) => Promise<void>
   >();
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    jest.resetModules();
 
     mockTelemetryCreate.mockResolvedValue({
       _id: 't1',
-      sensorId: body.sensorId,
-      shipmentId: resolvedShipmentId,
-      temperature: body.temp,
+      sensorId: 'sensor-abc-001',
+      shipmentId: body.shipmentId,
+      temperature: body.temperature,
       humidity: body.humidity,
       latitude: body.location.lat,
       longitude: body.location.lng,
+      batteryLevel: 100,
+      latitude: body.latitude,
+      longitude: body.longitude,
+      batteryLevel: body.batteryLevel,
       timestamp: parsedBodyForHash.timestamp,
       dataHash,
       anchorStatus: 'PENDING_ANCHOR',
@@ -81,11 +84,6 @@ describe('POST /api/webhooks/iot', () => {
 
     mockPushStellarAnchorJob.mockResolvedValue(undefined);
 
-    mockFindActiveShipmentBySensorId.mockResolvedValue({
-      _id: resolvedShipmentId,
-      status: 'IN_TRANSIT',
-    });
-
     await jest.unstable_mockModule('../src/modules/telemetry/telemetry.model.js', () => ({
       Telemetry: { create: mockTelemetryCreate },
       TelemetryAnchorStatus: {
@@ -97,7 +95,6 @@ describe('POST /api/webhooks/iot', () => {
 
     await jest.unstable_mockModule('../src/modules/telemetry/telemetry.service.js', () => ({
       createTelemetryRecord: async (input: any) => mockTelemetryCreate(input),
-      findActiveShipmentBySensorId: mockFindActiveShipmentBySensorId,
       updateTelemetryAnchor: jest.fn(),
       markTelemetryAnchorFailed: jest.fn(),
       getTelemetryService: jest.fn(),
@@ -138,10 +135,15 @@ describe('POST /api/webhooks/iot', () => {
     expect(res.status).toBe(202);
     expect(res.body.message).toContain('queued for Stellar anchoring');
 
-    expect(mockFindActiveShipmentBySensorId).toHaveBeenCalledWith(body.sensorId);
-
     expect(mockPushStellarAnchorJob).toHaveBeenCalledWith(
-      expect.objectContaining({ shipmentId: resolvedShipmentId }),
+      expect.objectContaining({ shipmentId: body.shipmentId }),
+    );
+
+    expect(mockTelemetryCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shipmentId: body.shipmentId,
+        dataHash,
+      }),
     );
 
     expect(res.body.data).toEqual(
@@ -158,18 +160,6 @@ describe('POST /api/webhooks/iot', () => {
     expect(res.status).toBe(202);
     expect(res.body.data.anchorStatus).toBe('PENDING_ANCHOR');
     expect(res.body.data.stellarTxHash).toBeUndefined();
-  });
-
-  it('returns 404 when no active shipment is found for sensorId', async () => {
-    mockFindActiveShipmentBySensorId.mockResolvedValue(null);
-
-    const res = await request(app)
-      .post('/api/webhooks/iot')
-      .set('x-api-key', 'valid-api-key-12345')
-      .send(body);
-
-    expect(res.status).toBe(404);
-    expect(res.body.message).toContain('sensor-abc-001');
   });
 
   it('returns 401 when x-api-key header is missing', async () => {
@@ -198,18 +188,18 @@ describe('POST /api/webhooks/iot', () => {
     const res = await request(app)
       .post('/api/webhooks/iot')
       .set('x-api-key', 'valid-api-key-12345')
-      .send({ ...body, temp: 'not-a-number' });
+      .send({ ...body, temperature: 'not-a-number' });
 
     expect(res.status).toBe(400);
   });
 
   it('returns 400 when required field is missing', async () => {
-    const { sensorId: _omit, ...noSensorId } = body;
+    const { shipmentId: _omit, ...missingShipmentId } = body;
 
     const res = await request(app)
       .post('/api/webhooks/iot')
       .set('x-api-key', 'valid-api-key-12345')
-      .send(noSensorId);
+      .send(missingShipmentId);
 
     expect(res.status).toBe(400);
   });
@@ -218,7 +208,7 @@ describe('POST /api/webhooks/iot', () => {
     const res = await request(app)
       .post('/api/webhooks/iot')
       .set('x-api-key', 'valid-api-key-12345')
-      .send({ ...body, location: 'not-an-object' });
+      .send({ ...body, latitude: 'not-a-number' });
 
     expect(res.status).toBe(400);
   });

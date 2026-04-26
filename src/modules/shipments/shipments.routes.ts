@@ -6,6 +6,7 @@ import {
   patchShipment,
   patchShipmentStatus,
   uploadShipmentProof,
+  deleteShipment,
 } from './shipments.controller.js';
 import { requireRole } from '../../shared/middleware/requireRole.js';
 import { requireAuth } from '../../shared/middleware/requireAuth.js';
@@ -24,5 +25,11 @@ shipmentsRouter.post(
 shipmentsRouter.patch('/:id', asyncHandler(patchShipment));
 shipmentsRouter.patch('/:id/status', requireAuth, asyncHandler(patchShipmentStatus));
 shipmentsRouter.post('/:id/proof', upload.single('file'), asyncHandler(uploadShipmentProof));
+shipmentsRouter.delete(
+  '/:id',
+  requireAuth,
+  requireRole('ADMIN', 'MANAGER'),
+  asyncHandler(deleteShipment)
+);
 
 export default shipmentsRouter;
