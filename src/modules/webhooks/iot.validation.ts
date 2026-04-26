@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const normalizedTelemetrySchema = z
   .object({
+    sensorId: z.string().min(1),
     shipmentId: z.string().min(1),
     temperature: z.coerce.number(),
     humidity: z.coerce.number(),
