@@ -167,10 +167,10 @@ describe('Shipments API (mocked DB)', () => {
     const first = await request(app).get('/api/shipments?limit=5');
     expect(first.status).toBe(200);
     expect(first.body.data).toHaveLength(5);
-    expect(first.body.hasMore).toBe(true);
-    expect(first.body.nextCursor).toBeTruthy();
+    expect(first.body.meta.hasMore).toBe(true);
+    expect(first.body.meta.nextCursor).toBeTruthy();
 
-    const second = await request(app).get(`/api/shipments?limit=5&cursor=${first.body.nextCursor}`);
+    const second = await request(app).get(`/api/shipments?limit=5&cursor=${first.body.meta.nextCursor}`);
     expect(second.status).toBe(200);
     expect(second.body.data).toHaveLength(5);
     const firstIds = first.body.data.map((s: { _id: string }) => s._id);
@@ -223,10 +223,10 @@ describe('Shipments API (mocked DB)', () => {
       .send({ status: 'IN_TRANSIT' });
 
     expect(res.status).toBe(200);
-    expect(res.body.status).toBe('IN_TRANSIT');
-    expect(res.body.milestones).toBeDefined();
-    expect(res.body.milestones.length).toBe(1);
-    const ms = res.body.milestones[0];
+    expect(res.body.data.status).toBe('IN_TRANSIT');
+    expect(res.body.data.milestones).toBeDefined();
+    expect(res.body.data.milestones.length).toBe(1);
+    const ms = res.body.data.milestones[0];
     expect(ms.name).toBe('IN_TRANSIT');
     expect(ms.walletAddress).toBe('0xABC123');
     expect(ms.userId).toBeDefined();
@@ -286,6 +286,6 @@ describe('Shipments API (mocked DB)', () => {
         status: 'CREATED'
       });
     expect(res.status).toBe(201);
-    expect(res.body.trackingNumber).toBe('TN-NEW-1');
+    expect(res.body.data.trackingNumber).toBe('TN-NEW-1');
   });
 });

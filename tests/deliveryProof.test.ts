@@ -87,9 +87,9 @@ describe('POST /api/shipments/:id/proof', () => {
       .attach('file', imagePath);
 
     expect(res.status).toBe(200);
-    expect(res.body.shipment.deliveryProof.url).toMatch(/^https:\/\/mock-storage\.com\/proof/);
-    expect(res.body.shipment.deliveryProof.recipientSignatureName).toBe('John Doe');
-    expect(res.body.shipment.deliveryProof.uploadedAt).toBeDefined();
+    expect(res.body.data.deliveryProof.url).toMatch(/^https:\/\/mock-storage\.com\/proof/);
+    expect(res.body.data.deliveryProof.recipientSignatureName).toBe('John Doe');
+    expect(res.body.data.deliveryProof.uploadedAt).toBeDefined();
   });
 
   it('should return 400 when file is missing', async () => {

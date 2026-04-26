@@ -81,7 +81,9 @@ describe('Auth and User Controllers', () => {
     const listRes = makeRes();
     await listApiKeysController(listReq, listRes, jest.fn());
     expect(listRes.status).toHaveBeenCalledWith(200);
-    expect(listRes.json).toHaveBeenCalledWith({ data: [{ _id: 'k1', name: 'Key 1', isActive: true }] });
+    expect(listRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({ data: [{ _id: 'k1', name: 'Key 1', isActive: true }] })
+    );
 
     const revokeReq = { params: { apiKeyId: 'k1' } } as unknown as Request;
     const revokeRes = makeRes();
@@ -112,13 +114,17 @@ describe('Auth and User Controllers', () => {
     const signupRes = makeRes();
     await signupController(signupReq, signupRes, jest.fn());
     expect(signupRes.status).toHaveBeenCalledWith(201);
-    expect(signupRes.json).toHaveBeenCalledWith({ data: expect.objectContaining({ token: 'token-signup' }) });
+    expect(signupRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ token: 'token-signup' }) })
+    );
 
     const loginReq = { body: { email: 'u@example.com', password: 'Password123!' } } as Request;
     const loginRes = makeRes();
     await loginController(loginReq, loginRes, jest.fn());
     expect(loginRes.status).toHaveBeenCalledWith(200);
-    expect(loginRes.json).toHaveBeenCalledWith({ data: expect.objectContaining({ token: 'token-login' }) });
+    expect(loginRes.json).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ token: 'token-login' }) })
+    );
   });
 
   it('createUserController returns 201 with user payload', async () => {
@@ -135,6 +141,8 @@ describe('Auth and User Controllers', () => {
     await createUserController(req, res, jest.fn());
 
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({ data: expect.objectContaining({ email: 'u@example.com' }) });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ email: 'u@example.com' }) })
+    );
   });
 });

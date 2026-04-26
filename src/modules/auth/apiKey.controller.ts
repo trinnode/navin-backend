@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 import { generateApiKey, revokeApiKey, listApiKeys } from './apiKey.service.js';
 import { AppError } from '../../shared/http/errors.js';
+import { sendResponse } from '../../shared/http/sendResponse.js';
 
 export const createApiKeyController: RequestHandler = async (req, res) => {
   const { name, organizationId, shipmentId } = req.body;
@@ -11,10 +12,13 @@ export const createApiKeyController: RequestHandler = async (req, res) => {
 
   const result = await generateApiKey({ name, organizationId, shipmentId });
 
-  res.status(201).json({
-    message: 'API key created successfully. Save this key securely - it will not be shown again.',
-    data: result,
-  });
+  sendResponse(
+    res,
+    201,
+    true,
+    'API key created successfully. Save this key securely - it will not be shown again.',
+    result,
+  );
 };
 
 export const listApiKeysController: RequestHandler = async (req, res) => {
@@ -26,7 +30,7 @@ export const listApiKeysController: RequestHandler = async (req, res) => {
 
   const apiKeys = await listApiKeys(organizationId);
 
-  res.status(200).json({ data: apiKeys });
+  sendResponse(res, 200, true, 'API keys retrieved', apiKeys);
 };
 
 export const revokeApiKeyController: RequestHandler = async (req, res) => {
@@ -38,5 +42,5 @@ export const revokeApiKeyController: RequestHandler = async (req, res) => {
 
   await revokeApiKey(apiKeyId);
 
-  res.status(200).json({ message: 'API key revoked successfully' });
+  sendResponse(res, 200, true, 'API key revoked successfully', null);
 };

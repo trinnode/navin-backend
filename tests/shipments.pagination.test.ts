@@ -27,8 +27,8 @@ describe('GET /api/shipments - Cursor Pagination', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.hasMore).toBe(false);
-    expect(res.body.nextCursor).toBeNull();
+    expect(res.body.meta.hasMore).toBe(false);
+    expect(res.body.meta.nextCursor).toBeNull();
   });
 
   it('should paginate correctly with cursor and no duplicates', async () => {
@@ -45,10 +45,10 @@ describe('GET /api/shipments - Cursor Pagination', () => {
     const firstPage = await request(app).get('/api/shipments?limit=2');
     expect(firstPage.status).toBe(200);
     expect(firstPage.body.data).toHaveLength(2);
-    expect(firstPage.body.hasMore).toBe(true);
-    expect(firstPage.body.nextCursor).toBeTruthy();
+    expect(firstPage.body.meta.hasMore).toBe(true);
+    expect(firstPage.body.meta.nextCursor).toBeTruthy();
 
-    const secondPage = await request(app).get(`/api/shipments?limit=2&cursor=${firstPage.body.nextCursor}`);
+    const secondPage = await request(app).get(`/api/shipments?limit=2&cursor=${firstPage.body.meta.nextCursor}`);
     expect(secondPage.status).toBe(200);
     expect(secondPage.body.data).toHaveLength(2);
 

@@ -58,8 +58,8 @@ describe('GET /api/anomalies - Cursor Pagination', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
-    expect(res.body.hasMore).toBe(false);
-    expect(res.body.nextCursor).toBeNull();
+    expect(res.body.meta.hasMore).toBe(false);
+    expect(res.body.meta.nextCursor).toBeNull();
   });
 
   it('should paginate correctly with cursor', async () => {
@@ -88,15 +88,15 @@ describe('GET /api/anomalies - Cursor Pagination', () => {
       .set('Authorization', `Bearer ${adminToken}`);
     expect(firstPage.status).toBe(200);
     expect(firstPage.body.data).toHaveLength(2);
-    expect(firstPage.body.hasMore).toBe(true);
-    expect(firstPage.body.nextCursor).toBeTruthy();
+    expect(firstPage.body.meta.hasMore).toBe(true);
+    expect(firstPage.body.meta.nextCursor).toBeTruthy();
 
     const secondPage = await request(app)
-      .get(`/api/anomalies?limit=2&cursor=${firstPage.body.nextCursor}`)
+      .get(`/api/anomalies?limit=2&cursor=${firstPage.body.meta.nextCursor}`)
       .set('Authorization', `Bearer ${adminToken}`);
     expect(secondPage.status).toBe(200);
     expect(secondPage.body.data).toHaveLength(2);
-    expect(secondPage.body.hasMore).toBe(true);
+    expect(secondPage.body.meta.hasMore).toBe(true);
 
     const firstPageIds = firstPage.body.data.map((a: { _id: string }) => a._id);
     const secondPageIds = secondPage.body.data.map((a: { _id: string }) => a._id);
@@ -168,7 +168,7 @@ describe('GET /api/anomalies - Cursor Pagination', () => {
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.anomaly.resolved).toBe(true);
+    expect(res.body.data.resolved).toBe(true);
 
     const updated = await Anomaly.findById(anomaly._id);
     expect(updated?.resolved).toBe(true);
