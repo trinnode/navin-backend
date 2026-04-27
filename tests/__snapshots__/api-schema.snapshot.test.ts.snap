@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`API Schema Snapshot Tests GET /api/anomalies should match response schema snapshot 1`] = `
+{
+  "data": [
+    {
+      "_id": "1",
+      "message": "Temperature exceeded threshold",
+      "resolved": false,
+      "severity": "HIGH",
+      "shipmentId": "ship1",
+      "timestamp": "2024-01-01T00:00:00.000Z",
+      "type": "TEMPERATURE_EXCEEDED",
+    },
+  ],
+  "message": "Anomalies retrieved",
+  "meta": {
+    "hasMore": false,
+    "nextCursor": null,
+  },
+  "success": true,
+}
+`;
+
+exports[`API Schema Snapshot Tests GET /api/shipments should match response schema snapshot 1`] = `
+{
+  "data": [
+    {
+      "_id": "1",
+      "destination": "Los Angeles",
+      "enterpriseId": "ent1",
+      "logisticsId": "log1",
+      "milestones": [],
+      "origin": "New York",
+      "status": "IN_TRANSIT",
+      "trackingNumber": "TN001",
+    },
+  ],
+  "message": "Shipments retrieved",
+  "meta": {
+    "hasMore": false,
+    "nextCursor": null,
+  },
+  "success": true,
+}
+`;

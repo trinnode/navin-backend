@@ -1,10 +1,11 @@
 import type { Request, Response } from 'express';
 import * as anomalyService from './anomaly.service.js';
+import { sendResponse } from '../../shared/http/sendResponse.js';
 
 export const getAnomalies = async (req: Request, res: Response) => {
   const { cursor, limit = 20, shipmentId, severity } = req.query;
 
-  const result = await anomalyService.getAnomaliesService({
+  const { data, nextCursor, hasMore } = await anomalyService.getAnomaliesService({
     cursor: cursor as string | undefined,
     limit: Number(limit),
     shipmentId: shipmentId as string | undefined,

@@ -27,10 +27,6 @@ function normalizeIotWebhookBody(body: IotWebhookBody) {
     sensorId: body.sensorId,
     shipmentId: undefined,
     temperature: body.temp,
-  const telemetry = await createTelemetryRecord({
-    sensorId: body.sensorId,
-    shipmentId: body.shipmentId,
-    temperature: body.temperature,
     humidity: body.humidity,
     latitude: body.location.lat,
     longitude: body.location.lng,
