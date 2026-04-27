@@ -16,6 +16,13 @@ import type {
 
 let io: Server | null = null;
 
+/** Tracks connected sockets: socket.id → userId */
+const activeUsers = new Map<string, string>();
+
+export function getActiveUsers(): ReadonlyMap<string, string> {
+  return activeUsers;
+}
+
 export function initSocketIO(httpServer: HttpServer): Server {
   io = new Server(httpServer, {
     cors: { origin: '*' },
@@ -24,7 +31,22 @@ export function initSocketIO(httpServer: HttpServer): Server {
   io.use(socketAuth);
 
   io.on('connection', socket => {
+    if (socket.user?.userId) {
+      activeUsers.set(socket.id, socket.user.userId);
+    }
+
     leaveAllShipmentRoomsOnDisconnect(socket);
+
+    socket.on('disconnecting', reason => {
+      console.log(
+        `[Socket] Disconnecting: ${socket.id} | Reason: ${reason} | Rooms: ${[...socket.rooms].join(', ')}`
+      );
+    });
+
+    socket.on('disconnect', reason => {
+      console.log(`[Socket] Client disconnected: ${socket.id} | Reason: ${reason}`);
+      activeUsers.delete(socket.id);
+    });
 
     socket.on('join_shipment', async (shipmentId: string) => {
       await joinShipmentRoom(socket, shipmentId);
