@@ -48,6 +48,7 @@ describe('Real-time Socket.io Events', () => {
     jest.clearAllMocks();
 
     const telemetryBody = {
+      sensorId: 'sensor-abc-001',
       shipmentId: '671000000000000000000001',
       temperature: 22.5,
       humidity: 55,
@@ -168,6 +169,7 @@ describe('Real-time Socket.io Events', () => {
   describe('POST /api/webhooks/iot - telemetry_update event', () => {
     it('emits telemetry_update to the correct shipment room', async () => {
       const body = {
+        sensorId: 'sensor-abc-001',
         shipmentId: '671000000000000000000001',
         temperature: 22.5,
         humidity: 55,
@@ -199,6 +201,7 @@ describe('Real-time Socket.io Events', () => {
 
     it('emits to the correct room format: shipment_{shipmentId}', async () => {
       const body = {
+        sensorId: 'sensor-abc-001',
         shipmentId: '671000000000000000000001',
         temperature: 22.5,
         humidity: 55,
@@ -222,6 +225,7 @@ describe('Real-time Socket.io Events', () => {
       mockValidateApiKey.mockResolvedValue({ isValid: false });
 
       const body = {
+        sensorId: 'sensor-abc-001',
         shipmentId: '671000000000000000000001',
         temperature: 22.5,
         humidity: 55,
@@ -257,6 +261,7 @@ describe('Real-time Socket.io Events', () => {
   describe('Event isolation - no global namespace broadcasts', () => {
     it('telemetry_update is sent only to specific room, not globally', async () => {
       const body = {
+        sensorId: 'sensor-abc-001',
         shipmentId: '671000000000000000000001',
         temperature: 22.5,
         humidity: 55,

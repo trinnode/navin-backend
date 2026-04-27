@@ -15,6 +15,11 @@ const alertQueue = new Queue('alert_queue', {
   connection: redisConnection as unknown as Record<string, unknown>,
 });
 
+export interface AlertPayload {
+  type: 'ANOMALY' | 'STATUS_CHANGE';
+  message: string;
+  shipmentId: string;
+}
 export type AlertPayload = {
   type: 'ANOMALY' | 'STATUS_CHANGE';
   message: string;
@@ -25,6 +30,8 @@ export async function addJobToQueue(name: string, payload: unknown): Promise<voi
   await transactionQueue.add(name, payload);
 }
 
+export async function dispatchAlert(data: AlertPayload): Promise<void> {
+  await alertQueue.add('alert', data);
 export async function dispatchAlert(payload: AlertPayload): Promise<void> {
   await alertQueue.add('alert', payload);
 }

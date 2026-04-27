@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 describe('processIotWebhook', () => {
   const payload = {
+    sensorId: 'sensor-123',
     shipmentId: '507f1f77bcf86cd799439011',
     temperature: 25.5,
     humidity: 60,
@@ -33,6 +34,7 @@ describe('processIotWebhook', () => {
 
     await jest.unstable_mockModule('../src/modules/telemetry/telemetry.service.js', () => ({
       createTelemetryRecord,
+      findActiveShipmentBySensorId: jest.fn(),
     }));
     await jest.unstable_mockModule('../src/modules/anomaly/anomaly.service.js', () => ({
       detectAnomaly,
@@ -94,6 +96,7 @@ describe('processIotWebhook', () => {
 
     await jest.unstable_mockModule('../src/modules/telemetry/telemetry.service.js', () => ({
       createTelemetryRecord,
+      findActiveShipmentBySensorId: jest.fn(),
     }));
     await jest.unstable_mockModule('../src/modules/anomaly/anomaly.service.js', () => ({
       detectAnomaly,
@@ -128,6 +131,7 @@ describe('processIotWebhook', () => {
 
     await jest.unstable_mockModule('../src/modules/telemetry/telemetry.service.js', () => ({
       createTelemetryRecord,
+      findActiveShipmentBySensorId: jest.fn(),
     }));
     await jest.unstable_mockModule('../src/modules/anomaly/anomaly.service.js', () => ({
       detectAnomaly: jest.fn(),

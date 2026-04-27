@@ -1,4 +1,5 @@
 import { Schema, model, Types } from 'mongoose';
+import { isoDatePlugin } from '../../shared/plugins/isoDatePlugin.js';
 
 export enum ShipmentStatus {
   CREATED = 'CREATED',
@@ -14,6 +15,8 @@ const MilestoneSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' },
   walletAddress: { type: String },
 });
+
+MilestoneSchema.plugin(isoDatePlugin);
 
 const ShipmentSchema = new Schema(
   {
@@ -36,6 +39,8 @@ const ShipmentSchema = new Schema(
   },
   { timestamps: true }
 );
+
+ShipmentSchema.plugin(isoDatePlugin);
 
 ShipmentSchema.index({ status: 1, createdAt: -1 });
 ShipmentSchema.index({ enterpriseId: 1, createdAt: -1 });

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../../shared/http/errors.js';
 import { env } from '../../env.js';
-import { UserModel } from '../users/users.model.js';
+import { UserModel, UserRole } from '../users/users.model.js';
 import type { SignupInput, LoginInput } from './auth.validation.js';
 
 export interface TokenPayload {
@@ -26,13 +26,14 @@ export async function signup(input: SignupInput) {
   const user = await UserModel.create({
     email: input.email,
     name: input.name,
-    password: hashedPassword,
-    role: 'user',
+    passwordHash: hashedPassword,
+    role: UserRole.VIEWER,
+    organizationId: input.organizationId,
   });
 
   const token = generateToken({
     userId: user._id.toString(),
-    role: user.role,
+    role: user.role as string,
     organizationId: user.organizationId?.toString(),
   });
 
@@ -41,7 +42,7 @@ export async function signup(input: SignupInput) {
       id: user._id,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: user.role as string,
     },
     token,
   };
@@ -53,14 +54,14 @@ export async function login(input: LoginInput) {
     throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
   }
 
-  const isValidPassword = await bcrypt.compare(input.password, user.passwordHash);
+  const isValidPassword = await bcrypt.compare(input.password, user.passwordHash as string);
   if (!isValidPassword) {
     throw new AppError(401, 'Invalid credentials', 'INVALID_CREDENTIALS');
   }
 
   const token = generateToken({
     userId: user._id.toString(),
-    role: user.role,
+    role: user.role as string,
     organizationId: user.organizationId?.toString(),
   });
 

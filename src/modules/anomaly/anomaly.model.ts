@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
+import { isoDatePlugin } from '../../shared/plugins/isoDatePlugin.js';
 
 export const ANOMALY_SEVERITIES = ['LOW', 'MEDIUM', 'HIGH'] as const;
 export type AnomalySeverity = (typeof ANOMALY_SEVERITIES)[number];
@@ -23,6 +24,8 @@ const AnomalySchema = new Schema(
   },
   { timestamps: true, strict: true }
 );
+
+AnomalySchema.plugin(isoDatePlugin);
 
 AnomalySchema.index({ shipmentId: 1, timestamp: -1, _id: -1 });
 AnomalySchema.index({ resolved: 1, timestamp: -1, _id: -1 });

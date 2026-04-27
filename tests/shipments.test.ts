@@ -124,8 +124,20 @@ await jest.unstable_mockModule('../src/modules/users/users.model.js', () => {
       return Promise.resolve(user);
     },
     findById: (id: PrimitiveId) => Promise.resolve(usersData.find(u => String(u._id) === String(id)) || null),
+    findOne: (query: Record<string, any>) => Promise.resolve(usersData.find(u => u.email === query.email) || null),
   };
-  return { UserModel };
+  const UserRole = {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    ADMIN: 'ADMIN',
+    MANAGER: 'MANAGER',
+    VIEWER: 'VIEWER',
+    CUSTOMER: 'CUSTOMER',
+  };
+  const OrganizationType = {
+    ENTERPRISE: 'ENTERPRISE',
+    LOGISTICS: 'LOGISTICS',
+  };
+  return { UserModel, UserRole, OrganizationType };
 });
 
 await jest.unstable_mockModule('../src/infra/socket/io.js', () => {

@@ -29,6 +29,7 @@ describe('Stellar Worker Functions', () => {
   describe('updateTelemetryAnchor', () => {
     it('updates telemetry with stellar tx hash and ANCHORED status', async () => {
       const telemetry = await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: '507f1f77bcf86cd799439011',
         temperature: 22.5,
         humidity: 55,
@@ -64,6 +65,7 @@ describe('Stellar Worker Functions', () => {
   describe('markTelemetryAnchorFailed', () => {
     it('marks telemetry as ANCHOR_FAILED with error message', async () => {
       const telemetry = await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: '507f1f77bcf86cd799439011',
         temperature: 22.5,
         humidity: 55,
@@ -99,6 +101,7 @@ describe('Stellar Worker Functions', () => {
   describe('Telemetry Model', () => {
     it('creates telemetry with PENDING_ANCHOR status by default', async () => {
       const telemetry = await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: '507f1f77bcf86cd799439011',
         temperature: 22.5,
         humidity: 55,
@@ -116,6 +119,7 @@ describe('Stellar Worker Functions', () => {
 
     it('allows creating telemetry with ANCHORED status', async () => {
       const telemetry = await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: '507f1f77bcf86cd799439011',
         temperature: 22.5,
         humidity: 55,
@@ -135,6 +139,7 @@ describe('Stellar Worker Functions', () => {
 
     it('allows creating telemetry with ANCHOR_FAILED status', async () => {
       const telemetry = await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: '507f1f77bcf86cd799439011',
         temperature: 22.5,
         humidity: 55,

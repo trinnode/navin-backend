@@ -26,6 +26,7 @@ describe('GET /api/telemetry - Cursor Pagination', () => {
     });
 
     await Telemetry.create({
+      sensorId: 'sensor-1',
       shipmentId: shipment._id,
       temperature: 25,
       humidity: 60,
@@ -57,6 +58,7 @@ describe('GET /api/telemetry - Cursor Pagination', () => {
 
     for (let i = 0; i < 5; i++) {
       await Telemetry.create({
+        sensorId: 'sensor-1',
         shipmentId: shipment._id,
         temperature: 20 + i,
         humidity: 60,

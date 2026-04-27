@@ -25,6 +25,13 @@ jest.unstable_mockModule('../src/modules/users/users.model.js', () => ({
     create: mockCreate,
     findOne: mockFindOne,
   },
+  UserRole: {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    ADMIN: 'ADMIN',
+    MANAGER: 'MANAGER',
+    VIEWER: 'VIEWER',
+    CUSTOMER: 'CUSTOMER',
+  },
 }));
 
 const { env } = await import('../src/env.js');
@@ -60,6 +67,7 @@ describe('Auth Service', () => {
         email: 'test@example.com',
         name: 'Test User',
         password: 'password123',
+        organizationId: 'org-id-123',
       });
 
       expect(result).toHaveProperty('token');
@@ -79,6 +87,7 @@ describe('Auth Service', () => {
           email: 'test@example.com',
           name: 'Test User',
           password: 'password123',
+          organizationId: 'org-id-123',
         })
       ).rejects.toThrow('Email already in use');
     });

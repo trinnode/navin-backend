@@ -1,4 +1,5 @@
 import mongoose, { type InferSchemaType } from 'mongoose';
+import { isoDatePlugin } from '../../shared/plugins/isoDatePlugin.js';
 
 const ApiKeySchema = new mongoose.Schema(
   {
@@ -11,6 +12,8 @@ const ApiKeySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+ApiKeySchema.plugin(isoDatePlugin);
 
 ApiKeySchema.index({ keyHash: 1 });
 ApiKeySchema.index({ organizationId: 1 });

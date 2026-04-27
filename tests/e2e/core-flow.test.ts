@@ -135,6 +135,7 @@ describe('E2E: Shipment Lifecycle (Hash and Emit Pipeline)', () => {
           email: 'test@example.com',
           name: 'Test User',
           password: 'Test123!',
+          organizationId: 'org-id-123',
         });
 
       // Endpoint should respond (201 success or 422 validation)
@@ -183,6 +184,7 @@ describe('E2E: Shipment Lifecycle (Hash and Emit Pipeline)', () => {
         .post('/api/webhooks/iot')
         .set('x-api-key', 'test-key')
         .send({
+          sensorId: 'sensor-abc-001',
           shipmentId: 'ship-123',
           temperature: 22.5,
           humidity: 55,
