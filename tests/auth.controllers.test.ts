@@ -105,6 +105,7 @@ describe('Auth and User Controllers', () => {
     await jest.unstable_mockModule('../src/modules/auth/auth.service.js', () => ({
       signup,
       login,
+      logout: jest.fn(),
       verifyToken: jest.fn(),
     }));
 

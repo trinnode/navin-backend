@@ -10,7 +10,6 @@ export interface IOrganization {
   updatedAt: Date;
 }
 
-
 export interface IUser {
   _id: string;
   email: string;

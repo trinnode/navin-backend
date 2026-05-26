@@ -1,9 +1,6 @@
 import { logger } from '../logger/logger.js';
 
-export type AuditAction =
-  | 'SHIPMENT_STATUS_CHANGED'
-  | 'RBAC_ROLE_MODIFIED'
-  | 'API_KEY_GENERATED';
+export type AuditAction = 'SHIPMENT_STATUS_CHANGED' | 'RBAC_ROLE_MODIFIED' | 'API_KEY_GENERATED';
 
 export interface AuditLogParams {
   userId: string;

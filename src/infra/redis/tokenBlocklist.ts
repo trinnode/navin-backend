@@ -1,14 +1,34 @@
 import { getRedisClient } from './connection.js';
 
-const BLOCKLIST_PREFIX = 'jwt:blocklist:';
+/** Strict UUID v4 prefix for O(1) Redis key lookups during auth checks. */
+export const BLOCKLIST_PREFIX = 'blocklist:uuid:';
+
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isValidJti(jti: string): boolean {
+  return UUID_V4_REGEX.test(jti);
+}
+
+function blocklistKey(jti: string): string {
+  if (!isValidJti(jti)) {
+    throw new Error('Invalid token identifier: expected UUID v4');
+  }
+  return `${BLOCKLIST_PREFIX}${jti.toLowerCase()}`;
+}
 
 export async function blockToken(jti: string, ttlSeconds: number): Promise<void> {
+  if (ttlSeconds <= 0) return;
+
   const client = getRedisClient() as import('ioredis').Redis;
-  await client.set(`${BLOCKLIST_PREFIX}${jti}`, '1', 'EX', ttlSeconds);
+  await client.set(blocklistKey(jti), '1', 'EX', ttlSeconds);
 }
 
 export async function isTokenBlocked(jti: string): Promise<boolean> {
+  if (!isValidJti(jti)) {
+    return false;
+  }
+
   const client = getRedisClient() as import('ioredis').Redis;
-  const result = await client.exists(`${BLOCKLIST_PREFIX}${jti}`);
-  return result === 1;
+  const result = await client.get(blocklistKey(jti));
+  return result !== null;
 }

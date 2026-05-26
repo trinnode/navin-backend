@@ -7,7 +7,10 @@ function isAllowedOrigin(origin: string, allowedOrigins: string[]): boolean {
 
 function getAllowedOrigins(): string[] {
   const raw = process.env.ALLOWED_ORIGINS ?? '';
-  return raw.split(',').map(o => o.trim()).filter(Boolean);
+  return raw
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
 }
 
 export const corsOptionsDelegate: CorsOptionsDelegate<Request> = (req, callback) => {

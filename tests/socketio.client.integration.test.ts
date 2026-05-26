@@ -2,6 +2,8 @@ import { describe, expect, beforeAll, afterAll, it, jest } from '@jest/globals';
 import { io, Socket } from 'socket.io-client';
 import request from 'supertest';
 import { createServer, Server } from 'http';
+import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { generateDataHash } from '../src/shared/utils/crypto.js';
 import type { Application } from 'express';
 
@@ -109,13 +111,24 @@ describe('Socket.io Client Integration Tests', () => {
       getRedisClient: jest.fn(),
     }));
 
+    await jest.unstable_mockModule('../src/modules/anomaly/anomaly.service.js', () => ({
+      detectAnomaly: jest.fn<any>().mockResolvedValue({ detected: false, anomalies: [] }),
+    }));
+
     await jest.unstable_mockModule('../src/modules/shipments/shipments.model.js', () => ({
       Shipment: {
+        findById: jest.fn<any>().mockReturnValue({
+          select: jest.fn<any>().mockReturnValue({
+            lean: jest.fn<any>().mockResolvedValue({
+              enterpriseId: 'org456',
+              logisticsId: '507f1f77bcf86cd799439012',
+            }),
+          }),
+        }),
         findByIdAndUpdate: jest.fn<any>().mockResolvedValue({
           _id: TEST_SHIPMENT_ID,
           status: 'IN_TRANSIT',
         }),
-        findById: jest.fn<any>(),
       },
       ShipmentStatus: {
         CREATED: 'CREATED',
@@ -157,10 +170,16 @@ describe('Socket.io Client Integration Tests', () => {
     });
 
     // Connect a real socket.io client
+    const socketToken = jwt.sign(
+      { userId: 'user123', role: 'ADMIN', organizationId: 'org456', jti: randomUUID() },
+      process.env.JWT_SECRET!
+    );
+
     socketClient = io(`http://localhost:${TEST_PORT}`, {
       transports: ['websocket'],
       forceNew: true,
       reconnection: false,
+      auth: { token: socketToken },
     });
 
     // Wait for connection

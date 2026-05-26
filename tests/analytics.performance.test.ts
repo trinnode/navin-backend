@@ -109,7 +109,9 @@ describe('GET /api/analytics/performance', () => {
     await jest.unstable_mockModule('../src/modules/shipments/shipments.model.js', () => {
       return {
         Shipment: {
-          aggregate: mockAggregate,
+          aggregate: jest.fn((pipeline: Array<Record<string, unknown>>) => ({
+            option: jest.fn(() => mockAggregate(pipeline)),
+          })),
         },
         ShipmentStatus: {
           CREATED: 'CREATED',

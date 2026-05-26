@@ -18,6 +18,19 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
+  await jest.unstable_mockModule('../src/infra/redis/connection.js', () => ({
+    getRedisClient: () => ({
+      get: jest.fn(async () => null),
+      set: jest.fn(async () => 'OK'),
+      exists: jest.fn(async () => 0),
+    }),
+    getRedisConnection: () => ({
+      get: jest.fn(async () => null),
+      set: jest.fn(async () => 'OK'),
+    }),
+    disconnectRedis: jest.fn(async () => undefined),
+  }));
+
   // Use MongoDB Memory Server if MONGO_URI is not set
   if (!process.env.MONGO_URI || process.env.MONGO_URI.includes('127.0.0.1:27017')) {
     mongoServer = await MongoMemoryServer.create();

@@ -1,12 +1,12 @@
 import { Queue } from 'bullmq';
-import { redisConnection } from '../infra/redis/connection.js';
+import { getRedisConnection } from '../infra/redis/connection.js';
 
 const transactionQueue = new Queue('transaction_queue', {
-  connection: redisConnection as unknown as Record<string, unknown>,
+  connection: getRedisConnection() as unknown as Record<string, unknown>,
 });
 
 const alertQueue = new Queue('alert_queue', {
-  connection: redisConnection as unknown as Record<string, unknown>,
+  connection: getRedisConnection() as unknown as Record<string, unknown>,
 });
 
 export type AlertPayload = {

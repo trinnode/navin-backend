@@ -50,6 +50,10 @@ describe('E2E: Shipment Lifecycle (Hash and Emit Pipeline)', () => {
       // Ignore
     }
 
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+
     // Start in-memory MongoDB instance
     mongoServer = await MongoMemoryServer.create();
     await mongoose.connect(mongoServer.getUri());

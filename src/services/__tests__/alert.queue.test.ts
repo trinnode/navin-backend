@@ -8,7 +8,7 @@ jest.unstable_mockModule('bullmq', () => ({
 }));
 
 jest.unstable_mockModule('../../infra/redis/connection.js', () => ({
-  redisConnection: {},
+  getRedisConnection: () => ({}),
 }));
 
 describe('dispatchAlert', () => {

@@ -79,7 +79,9 @@ export async function getAnalyticsPerformance(
     },
   ];
 
-  const [facet] = (await (Shipment.aggregate(pipeline) as any).maxTimeMS(5000)) as any[];
+  const [facet] = (await Shipment.aggregate(pipeline).option({
+    maxTimeMS: 5000,
+  })) as AggregationFacet[];
 
   const shipmentsByStatus = (facet?.shipmentsByStatus ?? []).map((row: any) => ({
     status: String(row._id),

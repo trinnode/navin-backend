@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { logger } from '../../shared/logger/logger.js';
 
 const MONGO_OPTIONS = {
@@ -8,21 +8,27 @@ const MONGO_OPTIONS = {
 } as const;
 
 export async function connectMongo(mongoUri: string) {
-  let testMongoServer: import('mongodb-memory-server').MongoMemoryServer | null = null;
-
-  if (process.env.NODE_ENV === 'test') {
-    const { MongoMemoryServer } = await import('mongodb-memory-server');
-    testMongoServer = await MongoMemoryServer.create();
-    mongoUri = testMongoServer.getUri();
+  if (mongoose.connection.readyState === 1) {
+    return;
   }
 
-  const connectWithRetry = async () => {
+  if (process.env.NODE_ENV === 'test') {
+    if (process.env.MONGO_URI) {
+      mongoUri = process.env.MONGO_URI;
+    } else {
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      mongoUri = (await MongoMemoryServer.create()).getUri();
+    }
+  }
+
+  const connectWithRetry = async (): Promise<void> => {
     logger.info('Attempting MongoDB connection...');
     try {
       await mongoose.connect(mongoUri, MONGO_OPTIONS);
     } catch (err) {
       logger.error(err, 'MongoDB connection failed, retrying in 5s...');
-      setTimeout(connectWithRetry, 5000);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return connectWithRetry();
     }
   };
 
@@ -30,7 +36,7 @@ export async function connectMongo(mongoUri: string) {
     logger.info('MongoDB connected successfully');
   });
 
-  mongoose.connection.on('error', (err) => {
+  mongoose.connection.on('error', err => {
     logger.error('MongoDB connection error:', err);
   });
 

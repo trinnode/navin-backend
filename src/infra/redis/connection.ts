@@ -20,7 +20,7 @@ export function getRedisClient(): Redis {
       logger.info('Redis connected successfully');
     });
 
-    redisClient.on('error', (err) => {
+    redisClient.on('error', err => {
       logger.error(err, 'Redis error');
     });
 
@@ -31,7 +31,10 @@ export function getRedisClient(): Redis {
   return redisClient;
 }
 
-export const redisConnection = getRedisClient();
+/** Shared Redis connection for BullMQ workers and queues (lazy — no connect at import time). */
+export function getRedisConnection(): Redis {
+  return getRedisClient();
+}
 
 export async function disconnectRedis(): Promise<void> {
   if (redisClient) {

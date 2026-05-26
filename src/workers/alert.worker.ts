@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { redisConnection } from '../infra/redis/connection.js';
+import { getRedisConnection } from '../infra/redis/connection.js';
 import { AlertPayload } from '../services/queue.service.js';
 import { logger } from '../shared/logger/logger.js';
 
@@ -13,7 +13,7 @@ async function processAlert(job: Job<AlertPayload>): Promise<void> {
 
 export function startAlertWorker(): Worker<AlertPayload> {
   const worker = new Worker<AlertPayload>('alert_queue', processAlert, {
-    connection: redisConnection as any,
+    connection: getRedisConnection() as any,
   });
 
   worker.on('failed', (job, err) => {
