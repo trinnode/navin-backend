@@ -1,10 +1,7 @@
 import './loadEnv.js';
 import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import morgan from 'morgan';
 import { fileURLToPath } from 'node:url';
-import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 
@@ -13,6 +10,7 @@ import { notFound } from './shared/middleware/notFound.js';
 import { errorMiddleware } from './shared/http/errorMiddleware.js';
 import { standardLimiter, loginLimiter } from './shared/middleware/rateLimiter.js';
 import { corsMiddleware, corsPreflight } from './config/cors.js';
+import { buildHelmetMiddleware } from './config/helmet.js';
 
 import { healthRouter } from './modules/health/health.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
@@ -28,11 +26,10 @@ const swaggerDocumentPath = fileURLToPath(new URL('../docs/swagger.yaml', import
 export function buildApp() {
   const app = express();
 
-  app.use(helmet());
+  app.use(buildHelmetMiddleware());
   // Enable weak ETags globally for client-side caching (Issue #80)
   app.set('etag', 'weak');
 
-  app.use(helmet());
   app.use(requestId());
   app.use(corsMiddleware);
   app.options('*', corsPreflight);
