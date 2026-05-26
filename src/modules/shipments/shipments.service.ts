@@ -44,12 +44,13 @@ export const getShipmentsService = async (params: {
 };
 
 export const createShipmentService = async (data: {
-  trackingNumber: string;
+  trackingNumber?: string;
   origin: string;
   destination: string;
   [key: string]: unknown;
 }) => {
-  const shipment = new Shipment(data);
+  const trackingNumber = data.trackingNumber || `NVN-${Math.floor(100000 + Math.random() * 900000)}`;
+  const shipment = new Shipment({ ...data, trackingNumber });
   await shipment.save();
 
   try {

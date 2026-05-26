@@ -16,11 +16,11 @@ const corsOptionsDelegate: CorsOptionsDelegate<Request> = (req, callback) => {
 
   // Allow non-browser requests that do not send an Origin header.
   if (!requestOrigin) {
-    return callback(null, { origin: true });
+    return callback(null, { origin: true, credentials: true });
   }
 
   if (allowedOrigins.length === 0 || isAllowedOrigin(requestOrigin, allowedOrigins)) {
-    return callback(null, { origin: true });
+    return callback(null, { origin: true, credentials: true });
   }
 
   return callback(new Error('Not allowed by CORS'));

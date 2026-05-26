@@ -6,7 +6,7 @@ export const ShipmentIdParamSchema = z.object({
 });
 
 export const CreateShipmentBodySchema = z.object({
-  trackingNumber: z.string().trim().min(1),
+  trackingNumber: z.string().trim().min(1).optional(),
   origin: z.string().trim().min(1),
   destination: z.string().trim().min(1),
   enterpriseId: z.string().trim().min(1),
