@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import express from 'express';
 import request from 'supertest';
 import { standardLimiter } from '../rateLimiter.js';
@@ -25,6 +25,40 @@ describe('standardLimiter', () => {
     const res = await request(app).get('/test');
     expect(res.headers['ratelimit-limit']).toBeDefined();
     expect(res.headers['ratelimit-remaining']).toBeDefined();
+  });
+
+  it('uses a one-minute window in development', async () => {
+    const previousEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'development';
+    jest.resetModules();
+
+    const { standardLimiter: devLimiter } = await import('../rateLimiter.js');
+    const app = buildTestApp(devLimiter);
+
+    for (let i = 0; i < 100; i += 1) {
+      const res = await request(app).get('/test');
+      expect(res.status).toBe(200);
+    }
+
+    const limited = await request(app).get('/test');
+    expect(limited.status).toBe(429);
+    expect(limited.body).toEqual({
+      success: false,
+      message: 'Too many requests, please try again later.',
+    });
+
+    process.env.NODE_ENV = previousEnv;
+  });
+
+  it('skips rate limiting for authenticated bearer tokens', async () => {
+    const app = buildTestApp(standardLimiter);
+
+    for (let i = 0; i < 105; i += 1) {
+      const res = await request(app)
+        .get('/test')
+        .set('Authorization', 'Bearer test-token');
+      expect(res.status).toBe(200);
+    }
   });
 });
 

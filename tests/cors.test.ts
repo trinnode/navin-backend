@@ -16,6 +16,7 @@ describe('CORS configuration', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers['access-control-allow-origin']).toBe('https://allowed.example');
+    expect(response.headers['access-control-allow-credentials']).toBe('true');
   });
 
   it('blocks requests from unlisted origins', async () => {
@@ -40,5 +41,6 @@ describe('CORS configuration', () => {
 
     expect(response.status).toBe(204);
     expect(response.headers['access-control-allow-origin']).toBe('https://allowed.example');
+    expect(response.headers['access-control-allow-credentials']).toBe('true');
   });
 });
