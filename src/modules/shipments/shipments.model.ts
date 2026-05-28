@@ -27,6 +27,7 @@ const ShipmentSchema = new Schema(
     deliveryProof: {
       url: { type: String },
       recipientSignatureName: { type: String },
+      notes: { type: String },
       uploadedAt: { type: Date },
     },
     deletedAt: { type: Date, default: null },

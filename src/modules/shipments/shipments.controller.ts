@@ -66,7 +66,10 @@ export const patchShipmentStatus = async (req: Request, res: Response) => {
 
 export const uploadShipmentProof = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { recipientSignatureName } = req.body;
+  const { recipientSignatureName, notes } = req.body as {
+    recipientSignatureName?: string;
+    notes?: string;
+  };
   const file = req.file;
 
   if (!file) {
@@ -74,7 +77,10 @@ export const uploadShipmentProof = async (req: Request, res: Response) => {
     return;
   }
 
-  const shipment = await uploadShipmentProofService(id, file, recipientSignatureName);
+  const shipment = await uploadShipmentProofService(id, file, {
+    recipientSignatureName,
+    notes,
+  });
 
   if (!shipment) {
     sendResponse(res, 404, false, 'Shipment not found', null);
@@ -87,6 +93,11 @@ export const uploadShipmentProof = async (req: Request, res: Response) => {
 export const deleteShipment = async (req: Request, res: Response) => {
   const { id } = req.params;
   const shipment = await deleteShipmentService(id);
-  if (!shipment) return res.status(404).json({ message: 'Shipment not found' });
-  res.json({ success: true, message: 'Shipment deleted successfully' });
+
+  if (!shipment) {
+    sendResponse(res, 404, false, 'Shipment not found', null);
+    return;
+  }
+
+  sendResponse(res, 200, true, 'Shipment deleted successfully', shipment);
 };

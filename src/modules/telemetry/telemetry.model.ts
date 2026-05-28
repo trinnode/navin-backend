@@ -29,6 +29,7 @@ const TelemetrySchema = new Schema(
 
     // Keep the original webhook payload for traceability/auditing.
     rawPayload: { type: Schema.Types.Mixed, required: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -37,6 +38,14 @@ TelemetrySchema.plugin(isoDatePlugin);
 
 TelemetrySchema.index({ shipmentId: 1, timestamp: -1 });
 TelemetrySchema.index({ anchorStatus: 1 });
+
+TelemetrySchema.pre(['find', 'findOne', 'findOneAndUpdate', 'countDocuments'], function () {
+  this.where({ deletedAt: null });
+});
+
+TelemetrySchema.pre('aggregate', function () {
+  this.pipeline().unshift({ $match: { deletedAt: null } });
+});
 
 export const Telemetry = model<ITelemetry>('Telemetry', TelemetrySchema);
 export { TelemetryAnchorStatus };

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../shared/http/asyncHandler.js';
+import { validateRequest } from '../../shared/validation/validate.js';
 import {
   getShipments,
   createShipment,
@@ -10,7 +11,6 @@ import {
 } from './shipments.controller.js';
 import { requireRole } from '../../shared/middleware/requireRole.js';
 import { requireAuth } from '../../shared/middleware/requireAuth.js';
-import { validateRequest } from '../../shared/validation/validate.js';
 import multer from 'multer';
 import {
   CreateShipmentBodySchema,

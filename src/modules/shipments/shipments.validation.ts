@@ -26,6 +26,7 @@ export const ShipmentStatusBodySchema = z.object({
 
 export const ShipmentProofBodySchema = z.object({
   recipientSignatureName: z.string().trim().min(1).optional(),
+  notes: z.string().trim().optional(),
 });
 
 export const ShipmentsQuerySchema = z.object({
