@@ -9,6 +9,7 @@ import { Telemetry } from '../telemetry/telemetry.model.js';
 import { AppError } from '../../shared/http/errors.js';
 import { IShipment, ShipmentStatus } from '../../shared/types/shipment.js';
 import { auditLog } from '../../shared/utils/auditLog.js';
+import { logger } from '../../shared/logger/logger.js';
 import { invalidateAnalyticsPerformanceCache } from '../analytics/analytics.cache.js';
 import * as paymentsRepo from '../payments/payments.repo.js';
 import { PaymentStatus } from '../payments/payments.model.js';
@@ -32,11 +33,7 @@ export const findShipments = async (
   skip: number,
   limit: number
 ): Promise<IShipment[]> => {
-  return Shipment.find(query)
-    .sort({ createdAt: -1, _id: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+  return Shipment.find(query).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit).lean();
 };
 
 /**
@@ -110,7 +107,7 @@ export const createShipmentService = async (data: {
     shipment.stellarTxHash = stellar.stellarTxHash;
     await shipment.save();
   } catch (err) {
-    console.warn('Stellar tokenization skipped:', (err as Error).message);
+    logger.warn({ err, shipmentId: shipment._id.toString() }, 'Stellar tokenization skipped');
   }
 
   return shipment;
@@ -207,19 +204,16 @@ export const updateShipmentStatusService = async (
           await paymentsRepo.updatePaymentStatus(
             payment._id.toString(),
             PaymentStatus.RELEASED,
-            releaseResult.transactionHash,
+            releaseResult.transactionHash
           );
-          console.log(
-            `[Shipment] Escrow released for shipment ${id}, ` +
-              `tx: ${releaseResult.transactionHash}`,
+          logger.info(
+            { shipmentId: id, transactionHash: releaseResult.transactionHash },
+            'Escrow released for shipment'
           );
         }
       }
     } catch (escrowError) {
-      console.warn(
-        `[Shipment] Failed to trigger escrow release for ${id}:`,
-        escrowError,
-      );
+      logger.warn({ err: escrowError, shipmentId: id }, 'Failed to trigger escrow release');
       // Don't fail the shipment status update if escrow release fails
       // The payment status can be manually updated later via webhook
     }
@@ -240,12 +234,13 @@ export const updateShipmentStatusService = async (
     status: shipment.status,
     milestones: shipment.milestones.map(m => ({
       name: m.name,
-      timestamp: m.timestamp,
+      timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : m.timestamp,
       description: m.description ?? undefined,
       userId: m.userId?.toString() ?? undefined,
       walletAddress: m.walletAddress ?? undefined,
     })),
-    updatedAt: shipment.updatedAt,
+    updatedAt:
+      shipment.updatedAt instanceof Date ? shipment.updatedAt.toISOString() : shipment.updatedAt,
   });
 
   return shipment;
@@ -262,17 +257,17 @@ export const updateShipmentStatusService = async (
 export const uploadShipmentProofService = async (
   id: string,
   file: Express.Multer.File,
-  proof: { recipientSignatureName?: string; notes?: string },
+  proof: { recipientSignatureName?: string; notes?: string }
 ) => {
   let proofUrl: string;
 
   try {
     proofUrl = await mockUploadToStorage(file);
-  } catch (err) {
+  } catch {
     throw new AppError(
       503,
       'Storage bucket unavailable, please try again later.',
-      'SERVICE_UNAVAILABLE',
+      'SERVICE_UNAVAILABLE'
     );
   }
 

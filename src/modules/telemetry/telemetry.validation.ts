@@ -8,11 +8,11 @@ export const TelemetryQuerySchema = z.object({
 
 const BulkTelemetryItemSchema = z.object({
   shipmentId: z.string().trim().min(1),
-  temperature: z.number(),
+  temperature: z.number().min(-50).max(100),
   humidity: z.number(),
   latitude: z.number(),
   longitude: z.number(),
-  batteryLevel: z.number(),
+  batteryLevel: z.number().min(0).max(100),
   timestamp: z.coerce.date(),
   sensorId: z.string().trim().optional(),
 });

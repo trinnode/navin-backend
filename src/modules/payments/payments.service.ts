@@ -1,7 +1,16 @@
 import { AppError } from '../../shared/http/errors.js';
 import * as paymentsRepo from './payments.repo.js';
 import { PaymentStatus } from './payments.model.js';
+import type { IPayment } from './payments.model.js';
 import type { CreatePaymentInput, UpdatePaymentStatusInput } from './payments.validation.js';
+import { getStellarExplorerUrl } from '../../services/stellar.service.js';
+
+function augmentPayment(payment: IPayment): IPayment & { explorerUrl?: string } {
+  return {
+    ...payment,
+    explorerUrl: payment.stellarTxHash ? getStellarExplorerUrl(payment.stellarTxHash) : undefined,
+  };
+}
 
 /**
  * Creates a payment record for a shipment.
@@ -19,7 +28,7 @@ export async function createPaymentService(input: CreatePaymentInput & { organiz
       status: input.status || PaymentStatus.PENDING,
     });
 
-    return payment;
+    return augmentPayment(payment);
   } catch (error) {
     if (error instanceof Error && error.message.includes('validation')) {
       throw new AppError(400, 'Invalid payment data', 'INVALID_PAYMENT_DATA');
@@ -39,7 +48,7 @@ export async function getPaymentByIdService(id: string) {
   if (!payment) {
     throw new AppError(404, 'Payment not found', 'PAYMENT_NOT_FOUND');
   }
-  return payment;
+  return augmentPayment(payment);
 }
 
 /**
@@ -53,11 +62,12 @@ export async function getPaymentsService(input: {
   limit?: number;
   cursor?: string;
 }) {
-  return paymentsRepo.getPaymentsByOrganization(input.organizationId, {
+  const payments = await paymentsRepo.getPaymentsByOrganization(input.organizationId, {
     status: input.status,
     limit: input.limit,
     cursor: input.cursor,
   });
+  return payments.map(augmentPayment);
 }
 
 /**
@@ -78,7 +88,7 @@ export async function updatePaymentStatusService(id: string, input: UpdatePaymen
     throw new AppError(500, 'Failed to update payment status', 'PAYMENT_UPDATE_FAILED');
   }
 
-  return updated;
+  return augmentPayment(updated);
 }
 
 /**

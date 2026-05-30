@@ -8,6 +8,7 @@ import {
   BASE_FEE,
 } from '@stellar/stellar-sdk';
 import { config } from '../config/index.js';
+import { logger } from '../shared/logger/logger.js';
 
 const horizon = new Horizon.Server('https://horizon-testnet.stellar.org');
 
@@ -153,7 +154,12 @@ export async function releaseEscrow(escrowData: {
       transactionHash: txHash,
     };
   } catch (error) {
-    console.error('[Stellar] Error releasing escrow:', error);
+    logger.error({ err: error }, 'Error releasing escrow');
     return { success: false };
   }
+}
+
+export function getStellarExplorerUrl(txHash: string): string {
+  const network = config.stellarNetwork === 'public' ? 'public' : 'testnet';
+  return `https://stellar.expert/explorer/${network}/tx/${txHash}`;
 }
