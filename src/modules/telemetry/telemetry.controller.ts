@@ -5,11 +5,13 @@ import type { BulkTelemetryBody } from './telemetry.validation.js';
 
 export const getTelemetry = async (req: Request, res: Response) => {
   const { cursor, limit = 20, shipmentId } = req.query;
-
+  const user = (req as any).user;
+  const organizationId = user?.organizationId;
   const { data, nextCursor, hasMore } = await getTelemetryService({
     cursor: cursor as string | undefined,
     limit: Number(limit),
     shipmentId: shipmentId as string | undefined,
+    organizationId: organizationId as string | undefined,
   });
 
   sendResponse(res, 200, true, 'Telemetry retrieved', data, { nextCursor, hasMore });
