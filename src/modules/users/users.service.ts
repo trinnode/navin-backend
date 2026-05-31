@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { AppError } from '../../shared/http/errors.js';
 import { createUser, findUserByEmail, findUsersByOrganizationId } from './users.repo.js';
 import { UserModel } from './users.model.js';
@@ -32,11 +34,16 @@ export async function createTeamMember(input: {
   const existing = await findUserByEmail(input.email);
   if (existing) throw new AppError(409, 'Email already in use', 'EMAIL_TAKEN');
 
+  // Team members have no password until they complete the invitation flow.
+  // Store a random bcrypt hash so bcrypt.compare(anything, placeholder) always
+  // returns false — preventing accidental authentication.
+  const lockedHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
+
   // Force override organizationId from caller's JWT context
   return createUser({
     email: input.email,
     name: input.name,
-    passwordHash: '', // Will be set later via invitation flow or direct password
+    passwordHash: lockedHash,
     role: input.role || UserRole.VIEWER,
     organizationId: input.callerOrganizationId, // Override with caller's org
   });
@@ -194,10 +201,13 @@ export async function acceptInvitation(input: { token: string; name: string; pas
     throw new AppError(409, 'Email already in use', 'EMAIL_TAKEN');
   }
 
+  // Hash the raw password in the service layer — the model has no pre-save hook.
+  const passwordHash = await bcrypt.hash(input.password, 10);
+
   const user = await UserModel.create({
     email: invitation.email,
     name: input.name,
-    passwordHash: input.password,
+    passwordHash,
     role: invitation.role,
     organizationId: invitation.organizationId,
   });
