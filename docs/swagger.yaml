@@ -716,8 +716,34 @@ paths:
                   meta:
                     type: object
                     properties:
-                      count:
+                      total:
                         type: integer
+                        description: Total number of matching payments for the organization.
+                      hasMore:
+                        type: boolean
+                        description: Whether more pages are available.
+                      nextCursor:
+                        type: string
+                        nullable: true
+                        description: Cursor to pass as `cursor` query param to fetch the next page.
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid authorization token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient role permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/telemetry:
     get:
       summary: Get telemetry records

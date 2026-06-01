@@ -1,4 +1,4 @@
-import { AppError } from '../../shared/http/errors.js';
+import { AppError, ErrorCodes } from '../../shared/http/errors.js';
 import * as paymentsRepo from './payments.repo.js';
 import { PaymentStatus } from './payments.model.js';
 import type { IPayment } from './payments.model.js';
@@ -46,28 +46,40 @@ export async function createPaymentService(input: CreatePaymentInput & { organiz
 export async function getPaymentByIdService(id: string) {
   const payment = await paymentsRepo.getPaymentById(id);
   if (!payment) {
-    throw new AppError(404, 'Payment not found', 'PAYMENT_NOT_FOUND');
+    throw new AppError(404, 'Payment not found', ErrorCodes.PAYMENT_NOT_FOUND);
   }
   return augmentPayment(payment);
+}
+
+export interface PaymentsResult {
+  data: ReturnType<typeof augmentPayment>[];
+  total: number;
+  hasMore: boolean;
+  nextCursor: string | null;
 }
 
 /**
  * Retrieves payments for an organization with optional pagination and status filtering.
  * @param {{organizationId: string; status?: PaymentStatus; limit?: number; cursor?: string}} input - Payment query parameters.
- * @returns {Promise<unknown>} Payment list result.
+ * @returns {Promise<PaymentsResult>} Paginated payment list with metadata.
  */
 export async function getPaymentsService(input: {
   organizationId: string;
   status?: PaymentStatus;
   limit?: number;
   cursor?: string;
-}) {
-  const payments = await paymentsRepo.getPaymentsByOrganization(input.organizationId, {
+}): Promise<PaymentsResult> {
+  const page = await paymentsRepo.getPaymentsByOrganization(input.organizationId, {
     status: input.status,
     limit: input.limit,
     cursor: input.cursor,
   });
-  return payments.map(augmentPayment);
+  return {
+    data: page.data.map(augmentPayment),
+    total: page.total,
+    hasMore: page.hasMore,
+    nextCursor: page.nextCursor,
+  };
 }
 
 /**
@@ -80,7 +92,7 @@ export async function getPaymentsService(input: {
 export async function updatePaymentStatusService(id: string, input: UpdatePaymentStatusInput) {
   const payment = await paymentsRepo.getPaymentById(id);
   if (!payment) {
-    throw new AppError(404, 'Payment not found', 'PAYMENT_NOT_FOUND');
+    throw new AppError(404, 'Payment not found', ErrorCodes.PAYMENT_NOT_FOUND);
   }
 
   const updated = await paymentsRepo.updatePaymentStatus(id, input.status, input.stellarTxHash);
