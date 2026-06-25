@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema(
     name: { type: String, required: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: Object.values(UserRole), required: true },
-    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: false },
     walletAddress: { type: String, required: false },
     deletedAt: { type: Date, default: null },
   },
