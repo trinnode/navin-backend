@@ -16,7 +16,7 @@ export const getAnomalies = async (req: Request, res: Response) => {
     resolved: resolvedValue,
   });
 
-  sendResponse(res, 200, true, 'Anomalies retrieved', { data, nextCursor, hasMore });
+  sendResponse(res, 200, true, 'Anomalies retrieved', data, { nextCursor, hasMore });
 };
 
 export const resolveAnomaly = async (req: Request, res: Response) => {
